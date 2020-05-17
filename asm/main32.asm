@@ -1,5 +1,3 @@
-default rel
-
 global WinMainCRTStartup
 
 SECTION .text align=16
