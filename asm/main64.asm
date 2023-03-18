@@ -107,4 +107,5 @@ aNtRaiseHardError:		db 'NtRaiseHardError',0
 
 align 16
 %define u(x) __?utf16?__(x)
+align 16
 uHelloWorld:			dw u(`Hello, world!\0`)
