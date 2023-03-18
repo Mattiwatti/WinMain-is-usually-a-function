@@ -106,17 +106,5 @@ align 16
 aNtRaiseHardError:		db 'NtRaiseHardError',0
 
 align 16
-uHelloWorld:			db 'H',0
-						db 'e',0
-						db 'l',0
-						db 'l',0
-						db 'o',0
-						db ',',0
-						db ' ',0
-						db 'w',0
-						db 'o',0
-						db 'r',0
-						db 'l',0
-						db 'd',0
-						db '!',0
-						db 0,0,0
+%define u(x) __?utf16?__(x)
+uHelloWorld:			dw u(`Hello, world!\0`)
