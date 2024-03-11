@@ -1,45 +1,12 @@
 // C++ code the assembly version was based on (they are almost the same).
-// This won't compile due to some missing headers/typedefs but should be easy enough to fix.
 
-#define WIN32_NO_STATUS
-#include <Windows.h>
-#undef WIN32_NO_STATUS
+#include "ntdll.h"
 #include <ntstatus.h>
 
-#define HARDERROR_OVERRIDE_ERRORMODE		0x10000000
-
-typedef enum _HARDERROR_RESPONSE_OPTION
-{
-	OptionAbortRetryIgnore,
-	OptionOk,
-	OptionOkCancel,
-	OptionRetryCancel,
-	OptionYesNo,
-	OptionYesNoCancel,
-	OptionShutdownSystem,
-	OptionOkNoWait,
-	OptionCancelTryContinue
-} HARDERROR_RESPONSE_OPTION, *PHARDERROR_RESPONSE_OPTION;
-
-typedef enum _HARDERROR_RESPONSE
-{
-	ResponseReturnToCaller,
-	ResponseNotHandled,
-	ResponseAbort,
-	ResponseCancel,
-	ResponseIgnore,
-	ResponseNo,
-	ResponseOk,
-	ResponseRetry,
-	ResponseYes,
-	ResponseTryAgain,
-	ResponseContinue
-} HARDERROR_RESPONSE, *PHARDERROR_RESPONSE;
-
-typedef
+using
+t_NtRaiseHardError =
 NTSTATUS
-(NTAPI*
-t_NtRaiseHardError)(
+(NTAPI*)(
 	_In_ NTSTATUS ErrorStatus,
 	_In_ ULONG NumberOfParameters,
 	_In_opt_ ULONG UnicodeStringParameterMask,
@@ -54,7 +21,7 @@ FORCEINLINE
 PVOID
 GetProcedureAddress(
 	_In_ ULONG_PTR DllBase,
-	_In_ PANSI_STRING RoutineName
+	_In_ PCANSI_STRING RoutineName
 	)
 {
 	// Get the PE headers and export directory RVA and size
@@ -90,6 +57,14 @@ GetProcedureAddress(
 	return nullptr;
 }
 
+#pragma code_seg(".text")
+__declspec(allocate(".text"))
+int WinMainCRTStartup();
+__declspec(allocate(".text"))
+static constexpr ANSI_STRING RoutineName = RTL_CONSTANT_ANSI_STRING("NtRaiseHardError");
+__declspec(allocate(".text"))
+static constexpr UNICODE_STRING Message = RTL_CONSTANT_STRING(L"Hello, world!"); // Man I hate this error
+
 int WinMainCRTStartup()
 {
 	// Get the ntdll base address. Module 0 is our exe and 1 is ntdll, so take the second entry
@@ -98,13 +73,11 @@ int WinMainCRTStartup()
 													InLoadOrderLinks);
 
 	// Find NtRaiseHardError in the ntdll export table
-	ANSI_STRING RoutineName = RTL_CONSTANT_ANSI_STRING("NtRaiseHardError");
 	t_NtRaiseHardError fpNtRaiseHardError = static_cast<t_NtRaiseHardError>(
 		GetProcedureAddress(reinterpret_cast<ULONG_PTR>(Entry->DllBase), &RoutineName));
 
 	// Function parameters
 	NTSTATUS ErrorStatus = STATUS_FATAL_APP_EXIT | HARDERROR_OVERRIDE_ERRORMODE;
-	UNICODE_STRING Message = RTL_CONSTANT_STRING(L"Hello, world!"); // Man I hate this error
 	ULONG_PTR Parameters[] = { reinterpret_cast<ULONG_PTR>(&Message) };
 	HARDERROR_RESPONSE Response;
 
