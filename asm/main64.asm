@@ -14,9 +14,8 @@ WinMainCRTStartup:
 		push	r14
 		sub		rsp, 40h
 
-		mov		rax, [gs:30h]			; Get TEB
 		mov		edx, 20Bh
-		mov		rcx, [rax+60h]			; Get PEB and traverse to Peb->Ldr->InLoadOrderModuleList.Flink->Flink
+		mov		rcx, [gs:60h]			; Get PEB and traverse to Peb->Ldr->InLoadOrderModuleList.Flink->Flink
 		mov		rax, [rcx+18h]
 		mov		rcx, [rax+10h]
 		mov		rax, [rcx]

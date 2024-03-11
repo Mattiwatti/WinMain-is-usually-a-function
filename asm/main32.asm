@@ -5,12 +5,11 @@ SECTION .text align=16
 align 16
 WinMainCRTStartup:
 		sub		esp, 20h
-		mov		eax, [fs:18h]				; Get TEB
 
 		push	ebx
 		push	ebp
 		push	esi
-		mov		eax, [eax+30h]				; Get PEB and traverse to Peb->Ldr->InLoadOrderModuleList.Flink->Flink
+		mov		eax, [fs:30h]				; Get PEB and traverse to Peb->Ldr->InLoadOrderModuleList.Flink->Flink
 		mov		esi, 20Bh
 		push	edi
 		push	78h
